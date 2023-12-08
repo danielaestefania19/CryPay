@@ -26,7 +26,6 @@ pub enum PaymentStatus {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Hash, PartialEq)]
 pub struct Petunia {
     ledger_canister_id: Principal,
-    subaccount: Option<Subaccount>,
     transaction_fee: Tokens,
 }
 
@@ -34,7 +33,6 @@ impl Default for Petunia {
     fn default() -> Self {
         Petunia {
             ledger_canister_id: MAINNET_LEDGER_CANISTER_ID,
-            subaccount: None,
             transaction_fee: DEFAULT_FEE,
         }
     }
@@ -45,6 +43,7 @@ pub struct TransferArgs {
     status: u8,
     memo: Memo,
     amount: Tokens,
+    subaccount: Option<Subaccount>,
     to_principal: Principal,
     to_subaccount: Option<Subaccount>,
 }
@@ -155,6 +154,7 @@ fn start_new_payment(
     memo: Memo,
     amount: Tokens,
     to_principal: Principal,
+    subaccount: Option<Subaccount>,
     to_subaccount: Option<Subaccount>,
 ) -> Result<String, String> {
     let payment_exists = check_if_payment_exists(external_payment_id);
@@ -167,6 +167,7 @@ fn start_new_payment(
                 memo,
                 status: 1,
                 to_principal,
+                subaccount,
                 to_subaccount,
             };
             payments.insert(external_payment_id, new_payment);
@@ -186,7 +187,7 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
     if payment_status == "Nuevo" {
         let payment = PAYMENTS.with(|p| {
             let payments = p.borrow();
-            payments.get(&external_payment_id).cloned()
+            payments.get(&external_payment_id).clone()
         });
 
         if let Some(payment) = payment {
@@ -196,6 +197,7 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
                 memo: payment.memo.clone(),
                 amount: payment.amount,
                 to_principal: payment.to_principal.clone(),
+                subaccount: payment.subaccount.clone(),
                 to_subaccount: payment.to_subaccount.clone(),
             };
 
@@ -208,6 +210,7 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
 
             let ledger_canister_id = PETUNIA.with(|p| p.borrow().ledger_canister_id);
             let to_subaccount = transfer_args.to_subaccount.unwrap_or(DEFAULT_SUBACCOUNT);
+            let subaccount = transfer_args.subaccount.unwrap_or(DEFAULT_SUBACCOUNT);
 
             let transfer_args = PETUNIA.with(|p| {
                 let petunia = p.borrow();
@@ -215,7 +218,7 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
                     memo: transfer_args.memo,
                     amount: transfer_args.amount,
                     fee: petunia.transaction_fee,
-                    from_subaccount: petunia.subaccount,
+                    from_subaccount: transfer_args.subaccount,
                     to: AccountIdentifier::new(&transfer_args.to_principal, &to_subaccount),
                     created_at_time: None,
                 }
