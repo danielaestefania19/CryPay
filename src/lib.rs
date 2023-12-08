@@ -92,11 +92,11 @@ fn get_pay_status(external_payment_id: u64) -> String {
         let payment = payments.get(&external_payment_id);
         match payment {
             Some(payment) => match payment.status {
-                0 => "NotExists".to_string(),
-                1 => "New".to_string(),
-                2 => "Paid".to_string(),
-                3 => "Completed".to_string(),
-                4 => "Refunded".to_string(),
+                0 => "NoExiste".to_string(),
+                1 => "Nuevo".to_string(),
+                2 => "Pagado".to_string(),
+                3 => "Completado".to_string(),
+                4 => "Reembolsado".to_string(),
                 _ => format!("Pago no Existe"),
             },
             None => format!("Pago no Existe"),
@@ -148,7 +148,6 @@ fn get_price(external_payment_id: u64) -> Option<Tokens> {
     })
 }
 
-
 #[ic_cdk::update]
 #[candid_method(update)]
 fn start_new_payment(
@@ -178,21 +177,22 @@ fn start_new_payment(
         Err(format!("Error: El pago {} ya existe.", external_payment_id))
     }
 }
+
 #[ic_cdk::update]
 #[candid_method(update)]
 async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
     let payment_status = get_pay_status(external_payment_id);
 
-    if payment_status == "New" {
+    if payment_status == "Nuevo" {
         let payment = PAYMENTS.with(|p| {
             let payments = p.borrow();
-            payments.get(&external_payment_id).clone()
+            payments.get(&external_payment_id).cloned()
         });
 
         if let Some(payment) = payment {
-            //Clone the payment details
+            // Clonar los detalles del pago
             let transfer_args = TransferArgs {
-                status: 1, // Set status to "New"
+                status: 1, // Establecer el estado en "Nuevo"
                 memo: payment.memo.clone(),
                 amount: payment.amount,
                 to_principal: payment.to_principal.clone(),
@@ -200,7 +200,7 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
             };
 
             ic_cdk::println!(
-                "Transferring {} tokens to principal {} subaccount {:?}",
+                "Transferir {} tokens a la principal {} subcuenta {:?}",
                 &transfer_args.amount,
                 &transfer_args.to_principal,
                 &transfer_args.to_subaccount
@@ -221,21 +221,19 @@ async fn pay(external_payment_id: u64) -> Result<BlockIndex, String> {
                 }
             });
 
-            
-
             ic_ledger_types::transfer(ledger_canister_id, transfer_args)
                 .await
-                .map_err(|e| format!("failed to call ledger: {:?}", e))?
-                .map_err(|e| format!("ledger transfer error {:?}", e))
+                .map_err(|e| format!("fallo al llamar al libro mayor: {:?}", e))?
+                .map_err(|e| format!("error de transferencia del libro mayor {:?}", e))
         } else {
             Err(format!(
-                "Payment details not found for payment ID {}",
+                "Detalles del pago no encontrados para el ID de pago {}",
                 external_payment_id
             ))
         }
     } else {
         Err(format!(
-            "Error: Payment {} does not have the expected status 'New'",
+            "Error: El pago {} no tiene el estado esperado 'Nuevo'",
             external_payment_id
         ))
     }
