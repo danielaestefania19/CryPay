@@ -52,20 +52,108 @@
 **Descripción general:**
 El proyecto de pasarela de pagos basada en contratos inteligentes resuelve problemas clave en el comercio electrónico. Elimina tarifas de proveedores de pago, agiliza transacciones internacionales, mejora la transparencia y seguridad, simplifica reembolsos, ofrece anonimato y reduce la dependencia de terceros. Además, facilita la participación de usuarios sin acceso a servicios bancarios tradicionales y promueve nuevos modelos de negocios al proporcionar una alternativa descentralizada y eficiente.
 
-**Requisitos:**
-Enumera cualquier precondición que deba cumplirse para que tu Pasarela de Pagos funcione correctamente.
+**Pasos para desplegar el Crypay y ver su funcionamiento:**
 
-**Instalación:**
-Proporciona instrucciones paso a paso sobre cómo instalar y configurar tu Pasarela de Pagos.
+**Paso 1: Configure el dfx.json archivo.**
+Abrir el dfx.json archivo en el directorio de su proyecto. Reemplace el contenido existente con lo siguiente:
+{
+  "canisters": {
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "ledger/icp_ledger.did",
+      "wasm" : "ledger/ledger-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+      }
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
 
-**Uso:**
-Explica cómo usar tu Pasarela de Pagos. Si es posible, incluye ejemplos de código.
+**Paso 2: Inicie una réplica local.**
+dfx start --background --clean
+**Paso 3: Crear una nueva identidad que funcione como una cuenta de acuñación:**
+dfx identity new minter
+dfx identity use minter
+export MINTER_ACCOUNT_ID=$(dfx ledger account-id)
+**Paso 4: Vuelva a su identidad predeterminada y registre su identificador de cuenta de libro mayor.**
+dfx identity use default
+export DEFAULT_ACCOUNT_ID=$(dfx ledger account-id)  
+**Paso 5: Implemente el bote del libro mayor con opciones de archivo:**
+dfx deploy --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai icp_ledger_canister --argument "
+  (variant {
+    Init = record {
+      minting_account = \"$MINTER_ACCOUNT_ID\";
+      initial_values = vec {
+        record {
+          \"$DEFAULT_ACCOUNT_ID\";
+          record {
+            e8s = 10_000_000_000 : nat64;
+          };
+        };
+      };
+      send_whitelist = vec {};
+      transfer_fee = opt record {
+        e8s = 10_000 : nat64;
+      };
+      token_symbol = opt \"LICP\";
+      token_name = opt \"Local ICP\";
+    }
+  })
+"
+**Paso 6: Interactúa con el bote.**
+Puede interactuar con el bote ejecutando comandos CLI, como:
+dfx canister call icp_ledger_canister name 
+Este comando devolverá el nombre del token, como:
+("Local ICP")
+**Paso 7: Vuelva a editar el archivo dfx.json de la siguiente manera:**
 
-**Contribución:**
-Si esperas que otros desarrolladores contribuyan a tu proyecto, explica cómo pueden hacerlo.
+ {
+  "canisters": {
+    "crypay": {
+      "candid": "src/crypay.did",
+      "package": "dapp",
+      "type": "rust",
+      "dependencies": [
+        "icp_ledger_canister"
+      ]
+    },
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "ledger/icp_ledger.did",
+      "wasm" : "ledger/ledger-canister.wasm.gz"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
 
-**Licencia:**
-Incluye una sección que detalle la licencia de tu proyecto.
+
+**Paso 8: Cree el canister Crypay:**
+
+dfx canister create crypay
+
+**Paso 9: Construya el Canister:**
+
+dfx build
+**Paso 10: Despliegue el Canister:**
+
+dfx deploy
 
 ## Mockup ilustrando la idea de la Aplicación:
 
