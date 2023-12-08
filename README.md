@@ -81,8 +81,8 @@ Pantalla de inicio de pago con la opción de seleccionar Pasarela de Pagos Cript
 **Identificación de Pago:**
 Generación de identificador de pago y monto en criptomonedas.
 
-**Metamask (o Mist):**
-Pantalla de Metamask (o Mist) para confirmar el pago.
+**Uso de una Wallet**
+Pantalla de Internet Computer wallet para confirmar el pago.
 
 **Verificación de Estado:**
 Pantalla de la tienda mostrando el estado del pago (pagado o pendiente).
