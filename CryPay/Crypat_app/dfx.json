@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "crypay": {
+      "candid": "crypay/src/crypay.did",
+      "package": "crypay",
+      "type": "rust",
+      "dependencies": [
+        "icp_ledger_canister"
+      ]
+    },
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "ledger/icp_ledger.did",
+      "wasm" : "ledger/ledger-canister.wasm.gz"
+      }
+      
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
