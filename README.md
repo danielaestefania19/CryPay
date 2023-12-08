@@ -4,7 +4,8 @@
 
 ## Mockup de la aplicación
 
-[Adjunta aquí la imagen del mockup de la aplicación]
+![Prototipo](img/Pantalla1.png)
+![Prototipo](img/Pantalla2.png)
 
 ## Modelo de negocio, modelo de monetización y rentabilidad de la aplicación:
 
@@ -58,6 +59,7 @@ El proyecto de pasarela de pagos basada en contratos inteligentes resuelve probl
 Abrir el dfx.json archivo en el directorio de su proyecto. Reemplace el contenido existente con lo siguiente:
 {
   "canisters": {
+
     "icp_ledger_canister": {
       "type": "custom",
       "candid": "ledger/icp_ledger.did",
@@ -70,6 +72,7 @@ Abrir el dfx.json archivo en el directorio de su proyecto. Reemplace el conten
     }
   },
   "defaults": {
+   
     "build": {
       "args": "",
       "packtool": ""
@@ -90,7 +93,9 @@ dfx identity use default
 export DEFAULT_ACCOUNT_ID=$(dfx ledger account-id)  
 **Paso 5: Implemente el bote del libro mayor con opciones de archivo:**
 dfx deploy --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai icp_ledger_canister --argument "
+
   (variant {
+
     Init = record {
       minting_account = \"$MINTER_ACCOUNT_ID\";
       initial_values = vec {
@@ -119,6 +124,7 @@ Este comando devolverá el nombre del token, como:
 
  {
   "canisters": {
+
     "crypay": {
       "candid": "src/crypay.did",
       "package": "dapp",
@@ -127,13 +133,17 @@ Este comando devolverá el nombre del token, como:
         "icp_ledger_canister"
       ]
     },
+
     "icp_ledger_canister": {
       "type": "custom",
       "candid": "ledger/icp_ledger.did",
       "wasm" : "ledger/ledger-canister.wasm.gz"
     }
   },
+
+
   "defaults": {
+
     "build": {
       "args": "",
       "packtool": ""

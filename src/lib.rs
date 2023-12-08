@@ -79,11 +79,6 @@ fn init(petunia: Petunia) {
 }
 
 #[ic_cdk::query]
-fn get_address() -> Principal {
-    ic_cdk::caller()
-}
-
-#[ic_cdk::query]
 #[candid_method(query)]
 fn get_pay_status(external_payment_id: u64) -> String {
     PAYMENTS.with(|p| {
