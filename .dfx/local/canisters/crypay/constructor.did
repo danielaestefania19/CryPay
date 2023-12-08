@@ -1,0 +1,63 @@
+type Tokens = record {
+    e8s: nat64;
+};
+
+type Petunia = record {
+    ledger_canister_id: principal;
+    subaccount: opt vec nat8;
+    transaction_fee: Tokens;
+};
+
+type PetuniaError = variant {
+    NotOwner;
+    PaymentExists;
+    InvalidPrice;
+    PaymentDoesNotExist;
+    InsufficientFunds;
+};
+
+type PaymentStatus = variant {
+    NotExists;
+    New;
+    Paid;
+    Completed;
+    Refunded;
+};
+
+type TransferArgs = record {
+    status: nat8;
+    memo: Memo;
+    amount: Tokens;
+    to_principal: principal;
+    to_subaccount: opt blob;
+    from_subaccount: opt blob;
+};
+
+type Memo = nat64;
+
+type TransferResult = variant {
+    Ok: TransferArgs;
+    Err: text;
+};
+
+type PaymentDetails = variant {
+    Ok: TransferArgs;
+    Err: text;
+};
+
+type start_pay_result = variant {
+    Ok: text;
+    Err: text;
+};
+
+
+
+service : {
+    get_address : () -> (principal) query;
+    get_pay_status : (nat64) -> (text) query;
+    check_if_payment_exists : (nat64) -> (bool) query;
+    get_price : (nat64) -> (opt Tokens) query;
+    start_new_payment : (nat64, Memo, Tokens, principal, opt vec nat8) -> (start_pay_result);
+    get_payment_details : (nat64) -> (TransferResult) query;
+    pay : (nat64) -> (TransferResult);
+}
